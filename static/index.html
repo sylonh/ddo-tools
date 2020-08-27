@@ -106,6 +106,7 @@
 		let n = 0;
 
 		let tiles = [];
+		let inverse = false;
 
 
 		function PuzzleBigO() {
@@ -126,6 +127,7 @@
 				{on: false, originalOn: false, push: false, x: 1, y: 3, nbs: [6, 0]}, // 7
 			];
 
+			inverse = false;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -149,6 +151,7 @@
 				{on: false, originalOn: false, push: false, x: 5, y: 5, nbs: [7, 5]}, // 8
 			];
 
+			inverse = false;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -180,6 +183,7 @@
 				{on: false, originalOn: false, push: false, x: 7, y: 7, nbs: [11, 14]}, // 15
 			];
 
+			inverse = false;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -221,6 +225,7 @@
 				{on: false, originalOn: false, push: false, x: 9, y: 9, nbs: [19, 23]}, // 24
 			];
 
+			inverse = false;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -257,6 +262,7 @@
 				{on: false, originalOn: false, push: false, x: 9, y: 7, nbs: [15, 18]}, // 19
 			];
 
+			inverse = false;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -267,13 +273,14 @@
 			boardTitle.textContent = "The Price of Freedom - Outside";
 
 			tiles = [
-				{on: false, originalOn: false, push: false, x: 6, y: 1, nbs: [2, 3]}, // 0
-				{on: false, originalOn: false, push: false, x: 10, y: 4, nbs: [3, 4]}, // 1
-				{on: false, originalOn: false, push: false, x: 8, y: 9, nbs: [4, 0]}, // 2
-				{on: false, originalOn: false, push: false, x: 4, y: 9, nbs: [0, 1]}, // 3
-				{on: false, originalOn: false, push: false, x: 2, y: 4, nbs: [1, 2]}, // 4
+				{on: true, originalOn: false, push: false, x: 6, y: 1, nbs: [2, 3]}, // 0
+				{on: true, originalOn: false, push: false, x: 10, y: 4, nbs: [3, 4]}, // 1
+				{on: true, originalOn: false, push: false, x: 8, y: 9, nbs: [4, 0]}, // 2
+				{on: true, originalOn: false, push: false, x: 4, y: 9, nbs: [0, 1]}, // 3
+				{on: true, originalOn: false, push: false, x: 2, y: 4, nbs: [1, 2]}, // 4
 			];
 
+			inverse = true;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -284,19 +291,20 @@
 			boardTitle.textContent = "The Price of Freedom - Outside";
 
 			tiles = [
-				{on: false, originalOn: false, push: false, x: 6, y: 1, nbs: [5, 6, 4, 1]}, // 0
-				{on: false, originalOn: false, push: false, x: 11, y: 4, nbs: [6, 7, 0, 2]}, // 1
-				{on: false, originalOn: false, push: false, x: 8, y: 9, nbs: [7, 8, 1, 3]}, // 2
-				{on: false, originalOn: false, push: false, x: 4, y: 9, nbs: [8, 9, 2, 4]}, // 3
-				{on: false, originalOn: false, push: false, x: 1, y: 4, nbs: [9, 5, 3, 0]}, // 4
+				{on: true, originalOn: false, push: false, x: 6, y: 1, nbs: [5, 6, 4, 1]}, // 0
+				{on: true, originalOn: false, push: false, x: 11, y: 4, nbs: [6, 7, 0, 2]}, // 1
+				{on: true, originalOn: false, push: false, x: 8, y: 9, nbs: [7, 8, 1, 3]}, // 2
+				{on: true, originalOn: false, push: false, x: 4, y: 9, nbs: [8, 9, 2, 4]}, // 3
+				{on: true, originalOn: false, push: false, x: 1, y: 4, nbs: [9, 5, 3, 0]}, // 4
 
-				{on: false, originalOn: false, push: false, x: 5, y: 3, nbs: [4, 0, 6, 7, 8, 9]}, // 5
-				{on: false, originalOn: false, push: false, x: 7, y: 3, nbs: [0, 1, 5, 7, 8, 9]}, // 6
-				{on: false, originalOn: false, push: false, x: 8, y: 5, nbs: [1, 2, 5, 6, 8, 9]}, // 7
-				{on: false, originalOn: false, push: false, x: 6, y: 7, nbs: [2, 3, 5, 6, 7, 9]}, // 8
-				{on: false, originalOn: false, push: false, x: 4, y: 5, nbs: [3, 4, 5, 6, 7, 8]}, // 9
+				{on: true, originalOn: false, push: false, x: 5, y: 3, nbs: [4, 0, 6, 7, 8, 9]}, // 5
+				{on: true, originalOn: false, push: false, x: 7, y: 3, nbs: [0, 1, 5, 7, 8, 9]}, // 6
+				{on: true, originalOn: false, push: false, x: 8, y: 5, nbs: [1, 2, 5, 6, 8, 9]}, // 7
+				{on: true, originalOn: false, push: false, x: 6, y: 7, nbs: [2, 3, 5, 6, 7, 9]}, // 8
+				{on: true, originalOn: false, push: false, x: 4, y: 5, nbs: [3, 4, 5, 6, 7, 8]}, // 9
 			];
 
+			inverse = true;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -307,19 +315,20 @@
 			boardTitle.textContent = "The Price of Freedom - Inside";
 
 			tiles = [
-				{on: false, originalOn: false, push: false, x: 6, y: 1, nbs: [5, 6, 4, 1]}, // 0
-				{on: false, originalOn: false, push: false, x: 11, y: 4, nbs: [6, 7, 0, 2]}, // 1
-				{on: false, originalOn: false, push: false, x: 8, y: 8, nbs: [7, 8, 1, 3]}, // 2
-				{on: false, originalOn: false, push: false, x: 4, y: 8, nbs: [8, 9, 2, 4]}, // 3
-				{on: false, originalOn: false, push: false, x: 1, y: 4, nbs: [9, 5, 3, 0]}, // 4
+				{on: true, originalOn: false, push: false, x: 6, y: 1, nbs: [5, 6, 4, 1]}, // 0
+				{on: true, originalOn: false, push: false, x: 11, y: 4, nbs: [6, 7, 0, 2]}, // 1
+				{on: true, originalOn: false, push: false, x: 8, y: 8, nbs: [7, 8, 1, 3]}, // 2
+				{on: true, originalOn: false, push: false, x: 4, y: 8, nbs: [8, 9, 2, 4]}, // 3
+				{on: true, originalOn: false, push: false, x: 1, y: 4, nbs: [9, 5, 3, 0]}, // 4
 
-				{on: false, originalOn: false, push: false, x: 18, y: 2, nbs: [4, 0, 6, 9]}, // 5
-				{on: false, originalOn: false, push: false, x: 22, y: 2, nbs: [0, 1, 7, 5]}, // 6
-				{on: false, originalOn: false, push: false, x: 25, y: 5, nbs: [1, 2, 8, 6]}, // 7
-				{on: false, originalOn: false, push: false, x: 20, y: 9, nbs: [2, 3, 9, 7]}, // 8
-				{on: false, originalOn: false, push: false, x: 15, y: 5, nbs: [3, 4, 8, 5]}, // 9
+				{on: true, originalOn: false, push: false, x: 22, y: 2, nbs: [4, 0, 6, 9]}, // 5
+				{on: true, originalOn: false, push: false, x: 18, y: 2, nbs: [0, 1, 7, 5]}, // 6
+				{on: true, originalOn: false, push: false, x: 15, y: 5, nbs: [1, 2, 8, 6]}, // 7
+				{on: true, originalOn: false, push: false, x: 20, y: 9, nbs: [2, 3, 9, 7]}, // 8
+				{on: true, originalOn: false, push: false, x: 25, y: 5, nbs: [3, 4, 8, 5]}, // 9
 			];
 
+			inverse = true;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -364,6 +373,7 @@
 				{on: false, originalOn: false, push: false, x: 19, y: 4, nbs: [21]}, // 22
 			];
 
+			inverse = false;
 			solution = null;
 			cleanTiles();
 			drawTiles();
@@ -465,7 +475,7 @@
 
 		function solved() {
 			for (id in tiles) {
-				if (!tiles[id].on) return false;
+				if (tiles[id].on == inverse) return false;
 			}
 			return true;
 		}
