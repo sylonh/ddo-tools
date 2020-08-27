@@ -1,0 +1,751 @@
+<html>
+<head>
+	<title>DDO Puzzle Solver</title>
+</head>
+<body>
+	<div style="float:left;">
+		<h3>Puzzles</h3>
+		<!--
+		<div>
+			<button onclick="PuzzleBigO()">Big O</button>
+			<button onclick="Puzzle3x3()">3x3</button>
+			<button onclick="Puzzle4x4()">4x4</button>
+			<button onclick="Puzzle5x5()">5x5</button>
+		</div>
+		-->
+		<div>
+			<button onclick="HouseOfPain()">House of Pain</button>
+			<button onclick="Puzzle4x5()">Toxic Treatment - 4x5</button>
+		</div>
+		<div>
+			<button onclick="ThePriceOfFreedomOutside()">The Price of Freedom - Outside</button>
+			<button onclick="ThePriceOfFreedomInside()">The Price of Freedom - Inside</button>
+		</div>
+		<div>
+			<button onclick="MadTeaParty()">Mad Tea Party - Circle puzzles</button>
+		</div>
+		<div>
+			<h3 id="board-title"></h3>
+			<button onclick="solve()">Solve</button>
+			<progress id="solve-progress" value="0"></progress>
+			<br>
+			<span id="solving">&nbsp;</span>
+		</div>
+	</div>
+	<div style="float:left;margin-left:20px;">
+		<div>
+			<h3>Insturctions</h3>
+			<ul>
+				<li>Select the puzzle type you want to work with in Puzzle section.</li>
+				<li>A puzzle is shown with gray (unlit) squares and green (lit) squares.</li>
+				<li>Left mouse button to use a tile as stepping on one in game.</li>
+				<li>Right mouse button to toggle a tile between lit/unlit.</li>
+				<li>
+					Click Solve to start searching for a solution to the puzzle state.
+					<br>
+					This can take some time depending on the puzzle size and solution size.
+					<br>
+					E.g. House of Pain can take more than a couple of minutes to solve when shortest path option is enabled.
+				</li>
+			</ul>
+		</div>
+		<div>
+			<h3>Options</h3>
+			<label>
+				<input type="checkbox" id="compute-all">
+				Find the shortest path by testing all combinations.
+				<br>
+				<small>This can be very slow for some puzzles depending on their stage. It's on by default for small puzzles.</small>
+			</label>
+			<br>
+			<label><input type="checkbox" id="tile-connections" checked> Show tile connection lines.</label>
+			<br>
+			<label><input type="checkbox" id="show-ids"> Show internal tile ID. Used as debugging info.</label>
+			<br>
+		</div>
+	</div>
+	<div style="clear:both;">
+		<canvas id="board" width="800px" height="350px" style="border: 1px solid black;"></canvas>
+	</div>
+	<div>
+		<h3>Future</h3>
+		<ul>
+			<li>Show some visual that the page is solving. E.g. update progress bar.</li>
+			<li>Add starting puzzle states.</li>
+			<li>Use an image of a lit/unlit tile instead of green/gray squares.</li>
+			<li>Shorten solve time. E.g. other solving methods, longest possible solution, ordering of tiles.</li>
+			<li>Position tiles better.</li>
+			<li>Use a background image for the puzzle. E.g. for House of Pain to make it clear where some walls are.</li>
+			<li>Be able to cancle solving when solving is still slow for some puzzles.</li>
+			<li></li>
+		</ul>
+	</div>
+	<div style="text-align: center;">
+		<div>
+		Created by Sylonh on Argonnessen.
+		</div>
+	</div>
+
+	<script>
+		let board = document.getElementById("board");
+		board.style = "border: 1px;";
+
+		let ctx = board.getContext('2d');
+
+		let computeAllToggle = document.getElementById("compute-all");
+		let computeAll = computeAllToggle.checked;
+
+		let showIDsToggle = document.getElementById("show-ids");
+		let showIDs = showIDsToggle.checked;
+
+		let tileConnectionsToggle = document.getElementById("tile-connections");
+		let tileConnections = tileConnectionsToggle.checked;
+
+		let solvePorgressBar = document.getElementById("solve-progress");
+
+		let n = 0;
+
+		let tiles = [];
+
+
+		function PuzzleBigO() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "Big O";
+
+			tiles = [
+				{on: false, originalOn: false, push: false, x: 3, y: 1, nbs: [7, 1]}, // 0
+				{on: false, originalOn: false, push: false, x: 5, y: 1, nbs: [0, 2]}, // 1
+
+				{on: false, originalOn: false, push: false, x: 7, y: 3, nbs: [1, 3]}, // 2
+				{on: false, originalOn: false, push: false, x: 7, y: 5, nbs: [2, 4]}, // 3
+
+				{on: false, originalOn: false, push: false, x: 5, y: 7, nbs: [3, 5]}, // 4
+				{on: false, originalOn: false, push: false, x: 3, y: 7, nbs: [4, 6]}, // 5
+
+				{on: false, originalOn: false, push: false, x: 1, y: 5, nbs: [5, 7]}, // 6
+				{on: false, originalOn: false, push: false, x: 1, y: 3, nbs: [6, 0]}, // 7
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+		function Puzzle3x3() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "3x3";
+
+			tiles = [
+				{on: false, originalOn: false, push: false, x: 1, y: 1, nbs: [1, 3]}, // 0
+				{on: false, originalOn: false, push: false, x: 1, y: 3, nbs: [0, 2, 4]}, // 1
+				{on: false, originalOn: false, push: false, x: 1, y: 5, nbs: [1, 5]}, // 2
+
+				{on: false, originalOn: false, push: false, x: 3, y: 1, nbs: [0, 6, 4]}, // 3
+				{on: false, originalOn: false, push: false, x: 3, y: 3, nbs: [3, 5, 1, 7]}, // 4
+				{on: false, originalOn: false, push: false, x: 3, y: 5, nbs: [4, 2, 8]}, // 5
+
+				{on: false, originalOn: false, push: false, x: 5, y: 1, nbs: [3, 7]}, // 6
+				{on: false, originalOn: false, push: false, x: 5, y: 3, nbs: [6, 8, 4]}, // 7
+				{on: false, originalOn: false, push: false, x: 5, y: 5, nbs: [7, 5]}, // 8
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+		function Puzzle4x4() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "4x4";
+
+			tiles = [
+				{on: false, originalOn: false, push: false, x: 1, y: 1, nbs: [1, 4]}, // 0
+				{on: false, originalOn: false, push: false, x: 1, y: 3, nbs: [0, 2, 5]}, // 1
+				{on: false, originalOn: false, push: false, x: 1, y: 5, nbs: [1, 3, 6]}, // 2
+				{on: false, originalOn: false, push: false, x: 1, y: 7, nbs: [2, 7]}, // 3
+
+				{on: false, originalOn: false, push: false, x: 3, y: 1, nbs: [0, 5, 8]}, // 4
+				{on: false, originalOn: false, push: false, x: 3, y: 3, nbs: [1, 4, 6, 9]}, // 5
+				{on: false, originalOn: false, push: false, x: 3, y: 5, nbs: [2, 5, 7, 10]}, // 6
+				{on: false, originalOn: false, push: false, x: 3, y: 7, nbs: [3, 6, 11]}, // 7
+
+				{on: false, originalOn: false, push: false, x: 5, y: 1, nbs: [4, 9, 12]}, // 8
+				{on: false, originalOn: false, push: false, x: 5, y: 3, nbs: [5, 8, 10, 13]}, // 9
+				{on: false, originalOn: false, push: false, x: 5, y: 5, nbs: [6, 9, 11, 14]}, // 10
+				{on: false, originalOn: false, push: false, x: 5, y: 7, nbs: [7, 10, 15]}, // 11
+
+				{on: false, originalOn: false, push: false, x: 7, y: 1, nbs: [8, 13]}, // 12
+				{on: false, originalOn: false, push: false, x: 7, y: 3, nbs: [9, 12, 14]}, // 13
+				{on: false, originalOn: false, push: false, x: 7, y: 5, nbs: [10, 13, 15]}, // 14
+				{on: false, originalOn: false, push: false, x: 7, y: 7, nbs: [11, 14]}, // 15
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+		function Puzzle5x5() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "5x5";
+
+			tiles = [
+				{on: false, originalOn: false, push: false, x: 1, y: 1, nbs: [1, 5]}, // 0
+				{on: false, originalOn: false, push: false, x: 1, y: 3, nbs: [0, 2, 6]}, // 1
+				{on: false, originalOn: false, push: false, x: 1, y: 5, nbs: [1, 3, 7]}, // 2
+				{on: false, originalOn: false, push: false, x: 1, y: 7, nbs: [2, 4, 8]}, // 3
+				{on: false, originalOn: false, push: false, x: 1, y: 9, nbs: [3, 9]}, // 4
+
+				{on: false, originalOn: false, push: false, x: 3, y: 1, nbs: [0, 6, 10]}, // 5
+				{on: false, originalOn: false, push: false, x: 3, y: 3, nbs: [1, 5, 7, 11]}, // 6
+				{on: false, originalOn: false, push: false, x: 3, y: 5, nbs: [2, 6, 8, 12]}, // 7
+				{on: false, originalOn: false, push: false, x: 3, y: 7, nbs: [3, 7, 9, 13]}, // 8
+				{on: false, originalOn: false, push: false, x: 3, y: 9, nbs: [4, 8, 14]}, // 9
+
+				{on: false, originalOn: false, push: false, x: 5, y: 1, nbs: [5, 11, 15]}, // 10
+				{on: false, originalOn: false, push: false, x: 5, y: 3, nbs: [6, 10, 12, 16]}, // 11
+				{on: false, originalOn: false, push: false, x: 5, y: 5, nbs: [7, 11, 13, 17]}, // 12
+				{on: false, originalOn: false, push: false, x: 5, y: 7, nbs: [8, 12, 14, 18]}, // 13
+				{on: false, originalOn: false, push: false, x: 5, y: 9, nbs: [9, 13, 19]}, // 14
+
+				{on: false, originalOn: false, push: false, x: 7, y: 1, nbs: [10, 16, 20]}, // 15
+				{on: false, originalOn: false, push: false, x: 7, y: 3, nbs: [11, 15, 17, 21]}, // 16
+				{on: false, originalOn: false, push: false, x: 7, y: 5, nbs: [12, 16, 18, 22]}, // 17
+				{on: false, originalOn: false, push: false, x: 7, y: 7, nbs: [13, 17, 19, 23]}, // 18
+				{on: false, originalOn: false, push: false, x: 7, y: 9, nbs: [14, 18, 24]}, // 19
+
+				{on: false, originalOn: false, push: false, x: 9, y: 1, nbs: [15, 21]}, // 20
+				{on: false, originalOn: false, push: false, x: 9, y: 3, nbs: [16, 20, 22]}, // 21
+				{on: false, originalOn: false, push: false, x: 9, y: 5, nbs: [17, 21, 23]}, // 22
+				{on: false, originalOn: false, push: false, x: 9, y: 7, nbs: [18, 22, 24]}, // 23
+				{on: false, originalOn: false, push: false, x: 9, y: 9, nbs: [19, 23]}, // 24
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+		function Puzzle4x5() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "Toxic Treatment 4x5";
+
+			tiles = [
+				{on: false, originalOn: false, push: false, x: 1, y: 1, nbs: [1, 4]}, // 0
+				{on: false, originalOn: false, push: false, x: 1, y: 3, nbs: [0, 2, 5]}, // 1
+				{on: false, originalOn: false, push: false, x: 1, y: 5, nbs: [1, 3, 6]}, // 2
+				{on: false, originalOn: false, push: false, x: 1, y: 7, nbs: [2, 7]}, // 3
+
+				{on: false, originalOn: false, push: false, x: 3, y: 1, nbs: [0, 5, 8]}, // 4
+				{on: false, originalOn: false, push: false, x: 3, y: 3, nbs: [1, 4, 6, 9]}, // 5
+				{on: false, originalOn: false, push: false, x: 3, y: 5, nbs: [2, 5, 7, 10]}, // 6
+				{on: false, originalOn: false, push: false, x: 3, y: 7, nbs: [3, 6, 11]}, // 7
+
+				{on: false, originalOn: false, push: false, x: 5, y: 1, nbs: [4, 9, 12]}, // 8
+				{on: false, originalOn: false, push: false, x: 5, y: 3, nbs: [5, 8, 10, 13]}, // 9
+				{on: false, originalOn: false, push: false, x: 5, y: 5, nbs: [6, 9, 11, 14]}, // 10
+				{on: false, originalOn: false, push: false, x: 5, y: 7, nbs: [7, 10, 15]}, // 11
+
+				{on: false, originalOn: false, push: false, x: 7, y: 1, nbs: [8, 13, 16]}, // 12
+				{on: false, originalOn: false, push: false, x: 7, y: 3, nbs: [9, 12, 14, 17]}, // 13
+				{on: false, originalOn: false, push: false, x: 7, y: 5, nbs: [10, 13, 15, 18]}, // 14
+				{on: false, originalOn: false, push: false, x: 7, y: 7, nbs: [11, 14, 19]}, // 15
+
+				{on: false, originalOn: false, push: false, x: 9, y: 1, nbs: [12, 17]}, // 16
+				{on: false, originalOn: false, push: false, x: 9, y: 3, nbs: [13, 16, 18]}, // 17
+				{on: false, originalOn: false, push: false, x: 9, y: 5, nbs: [14, 17, 19]}, // 18
+				{on: false, originalOn: false, push: false, x: 9, y: 7, nbs: [15, 18]}, // 19
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+		function MadTeaParty() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "The Price of Freedom - Outside";
+
+			tiles = [
+				{on: false, originalOn: false, push: false, x: 6, y: 1, nbs: [2, 3]}, // 0
+				{on: false, originalOn: false, push: false, x: 10, y: 4, nbs: [3, 4]}, // 1
+				{on: false, originalOn: false, push: false, x: 8, y: 9, nbs: [4, 0]}, // 2
+				{on: false, originalOn: false, push: false, x: 4, y: 9, nbs: [0, 1]}, // 3
+				{on: false, originalOn: false, push: false, x: 2, y: 4, nbs: [1, 2]}, // 4
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+		function ThePriceOfFreedomOutside() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "The Price of Freedom - Outside";
+
+			tiles = [
+				{on: false, originalOn: false, push: false, x: 6, y: 1, nbs: [5, 6, 4, 1]}, // 0
+				{on: false, originalOn: false, push: false, x: 11, y: 4, nbs: [6, 7, 0, 2]}, // 1
+				{on: false, originalOn: false, push: false, x: 8, y: 9, nbs: [7, 8, 1, 3]}, // 2
+				{on: false, originalOn: false, push: false, x: 4, y: 9, nbs: [8, 9, 2, 4]}, // 3
+				{on: false, originalOn: false, push: false, x: 1, y: 4, nbs: [9, 5, 3, 0]}, // 4
+
+				{on: false, originalOn: false, push: false, x: 5, y: 3, nbs: [4, 0, 6, 7, 8, 9]}, // 5
+				{on: false, originalOn: false, push: false, x: 7, y: 3, nbs: [0, 1, 5, 7, 8, 9]}, // 6
+				{on: false, originalOn: false, push: false, x: 8, y: 5, nbs: [1, 2, 5, 6, 8, 9]}, // 7
+				{on: false, originalOn: false, push: false, x: 6, y: 7, nbs: [2, 3, 5, 6, 7, 9]}, // 8
+				{on: false, originalOn: false, push: false, x: 4, y: 5, nbs: [3, 4, 5, 6, 7, 8]}, // 9
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+		function ThePriceOfFreedomInside() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "The Price of Freedom - Inside";
+
+			tiles = [
+				{on: false, originalOn: false, push: false, x: 6, y: 1, nbs: [5, 6, 4, 1]}, // 0
+				{on: false, originalOn: false, push: false, x: 11, y: 4, nbs: [6, 7, 0, 2]}, // 1
+				{on: false, originalOn: false, push: false, x: 8, y: 8, nbs: [7, 8, 1, 3]}, // 2
+				{on: false, originalOn: false, push: false, x: 4, y: 8, nbs: [8, 9, 2, 4]}, // 3
+				{on: false, originalOn: false, push: false, x: 1, y: 4, nbs: [9, 5, 3, 0]}, // 4
+
+				{on: false, originalOn: false, push: false, x: 18, y: 2, nbs: [4, 0, 6, 9]}, // 5
+				{on: false, originalOn: false, push: false, x: 22, y: 2, nbs: [0, 1, 7, 5]}, // 6
+				{on: false, originalOn: false, push: false, x: 25, y: 5, nbs: [1, 2, 8, 6]}, // 7
+				{on: false, originalOn: false, push: false, x: 20, y: 9, nbs: [2, 3, 9, 7]}, // 8
+				{on: false, originalOn: false, push: false, x: 15, y: 5, nbs: [3, 4, 8, 5]}, // 9
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+		function HouseOfPain() {
+			let boardTitle = document.getElementById("board-title");
+			boardTitle.textContent = "House of Pain";
+
+			tiles = [
+				{on: false, skip: true, originalOn: false, push: false, x: 1, y: 10, nbs: [1, 2]}, // 0
+
+				{on: false, originalOn: false, push: false, x: 3, y: 10, nbs: [0, 2]}, // 1
+				{on: false, originalOn: false, push: false, x: 3, y: 8, nbs: [0, 1, 3, 5]}, // 2
+				{on: false, originalOn: false, push: false, x: 3, y: 6, nbs: [2, 4, 5]}, // 3
+				{on: false, originalOn: false, push: false, x: 3, y: 4, nbs: [3]}, // 4
+
+				{on: false, originalOn: false, push: false, x: 5, y: 8, nbs: [2, 3, 6, 7]}, // 5
+
+				{on: false, originalOn: false, push: false, x: 7, y: 10, nbs: [5, 7]}, // 6
+				{on: false, originalOn: false, push: false, x: 7, y: 8, nbs: [5, 6, 8, 10]}, // 7
+				{on: false, originalOn: false, push: false, x: 7, y: 6, nbs: [7, 9]}, // 8
+				{on: false, originalOn: false, push: false, x: 7, y: 4, nbs: [8]}, // 9
+
+				{on: false, originalOn: false, push: false, x: 9, y: 8, nbs: [7, 11]}, // 10
+
+				{on: false, originalOn: false, push: false, x: 11, y: 8, nbs: [10, 12, 13]}, // 11
+				{on: false, originalOn: false, push: false, x: 11, y: 4, nbs: [11, 14, 15]}, // 12
+
+				{on: false, originalOn: false, push: false, x: 13, y: 8, nbs: [11, 16]}, // 13
+				{on: false, originalOn: false, push: false, x: 13, y: 6, nbs: [12, 15, 17]}, // 14
+				{on: false, skip: true, originalOn: false, push: false, x: 13, y: 2, nbs: [12, 14, 17]}, // 15
+
+				{on: false, originalOn: false, push: false, x: 15, y: 8, nbs: [13, 17, 18]}, // 16
+				{on: false, originalOn: false, push: false, x: 15, y: 4, nbs: [14, 15, 16]}, // 17
+
+				{on: false, originalOn: false, push: false, x: 17, y: 8, nbs: [16, 20, 21]}, // 18
+
+				{on: false, originalOn: false, push: false, x: 19, y: 10, nbs: [20]}, // 19
+				{on: false, originalOn: false, push: false, x: 19, y: 8, nbs: [18, 19, 21]}, // 20
+				{on: false, originalOn: false, push: false, x: 19, y: 6, nbs: [18, 20, 22]}, // 21
+				{on: false, originalOn: false, push: false, x: 19, y: 4, nbs: [21]}, // 22
+			];
+
+			solution = null;
+			cleanTiles();
+			drawTiles();
+		}
+
+
+		function cleanTiles() {
+			let IDs = Array(tiles.length);
+			let newID = 0;
+			for (let id in tiles) {
+				if (!tiles[id].skip) IDs[id] = newID++;
+			}
+			n = newID;
+			for (let id in tiles) {
+				if (tiles[id].skip) IDs[id] = newID++;
+			}
+
+			let newTiles = [];
+			let skipTiles = [];
+			for (let id in tiles) {
+				let tile = tiles[id];
+
+				let newNBS = [];
+				for (let nbid in tile.nbs) {
+					let newNBID = IDs[tile.nbs[nbid]];
+					newNBS.push(newNBID);
+				}
+				tile.nbs = newNBS;
+
+				if (tile.skip) skipTiles.push(tile);
+				else newTiles.push(tile);
+			}
+
+			tiles = newTiles.concat(skipTiles);
+
+			return n;
+		}
+
+		function combinationsIterative(n) {
+			return {
+				n: n,
+				subsetBits: 1,
+				subsetBitsMax: 1 << n,
+				next: function() {
+					if (this.subsetBits == this.subsetBitsMax) {
+						return null;
+					}
+
+					let subset = [];
+					for (let object = 0; object < this.n; object++) {
+						if ((this.subsetBits>>object)&1 == 1) {
+							subset.push(object);
+						}
+					}
+
+					this.subsetBits++;
+
+					return subset;
+				},
+				reset: function() {
+					this.subsetBits = 1;
+				},
+				progress: function() {
+					return this.subsetBits / this.subsetBitsMax;
+				}
+			}
+		}
+
+
+		function combinations(n) {
+			let subsets = [];
+			// Go through all possible combinations of objects
+			// from 1 (only first object in subset) to 2^length (all objects in subset)
+			for (let subsetBits = 1; subsetBits < (1 << n); subsetBits++) {
+				let subset = [];
+				for (object = 0; object < n; object++) {
+					if ((subsetBits>>object)&1 == 1) {
+						subset.push(object);
+					}
+				}
+				subsets.push(subset);
+			}
+			return subsets
+		}
+
+		function sortedCombinations(n) {
+			let sets = combinations(n);
+			let sorted = [];
+			for (i = 1; i <= n; i++) {
+				for (id in sets) {
+					let s = sets[id];
+					if (s.length == i) {
+						sorted.push(s);
+					}
+				}
+			}
+			return sorted;
+		}
+
+		function solved() {
+			for (id in tiles) {
+				if (!tiles[id].on) return false;
+			}
+			return true;
+		}
+
+		function resetOn() {
+			for (id in tiles) {
+				tiles[id].on = tiles[id].originalOn;
+			}
+		}
+
+		function checkSet(set) {
+			let ok = false;
+
+			for (j in set) {
+				let id = set[j];
+				clickTile(id);
+			}
+
+			ok = solved();
+			resetOn();
+
+			return ok;
+		}
+
+		let solution = null;
+		function solve() {
+			let solvingText = document.getElementById("solving");
+
+			solvePorgressBar.value = 0;
+			solvingText.textContent = "solving...";
+
+			for (id in tiles) {
+				tiles[id].originalOn = tiles[id].on;
+				tiles[id].push = false;
+			}
+
+			if (solved()) {
+				solvingText.textContent = "already solved...";
+				drawTiles();
+				return;
+			}
+
+			// check previous solution first
+			let skipSolve = solution && checkSet(solution);
+
+			if (!skipSolve) {
+				drawTiles();
+
+				console.time();
+
+				solution = null;
+
+				let combIt = combinationsIterative(n);
+
+				combIt.reset();
+
+				let foundSolution = false;
+				while (true) {
+					let set = combIt.next();
+					//console.log(set);
+					if (set == null) break;
+
+					// if (solution && solution.length <= set.length) continue;
+
+					solvePorgressBar.value = combIt.progress();
+
+					if (checkSet(set)) {
+						if (!solution || solution.length > set.length) {
+							solution = set;
+						}
+
+						if (computeAll) continue;
+
+						let l = solution.length;
+						//if (n < 22 && l > 5) continue;
+						//if (n < 20 && l > 1) continue;
+
+						break;
+					}
+				}
+
+				console.timeEnd();
+			}
+
+			//solvePorgressBar.value = 1;
+
+			if (solution) {
+				for (j in solution) {
+					let id = solution[j];
+					tiles[id].push = true;
+				}
+				solvingText.textContent = "solution found...";
+				drawTiles();
+			} else {
+				solvingText.textContent = "no solution found...";
+			}
+		}
+		//solve();
+
+		let w = 30;
+		let h = 30;
+
+		function distance(tile, w, h, x, y) {
+			let xc = tile.x * w + w/2;
+			let yc = tile.y * h + h/2;
+			let d = (xc - x) * (xc - x) + (yc - y) * (yc - y);
+			return d;
+		}
+
+		function inSquare(tile, w, h, x, y) {
+			let x0 = tile.x * w;
+			let y0 = tile.y * h;
+			let x1 = tile.x * w + w;
+			let y1 = tile.y * h + h;
+			return (x0 <= x && x <= x1 && y0 <= y && y <= y1);
+		}
+
+		function findTile(x, y, maxDist=100) {
+			for(let id in tiles) {
+				let tile = tiles[id];
+				//let d = distance(tile, w, h, x, y);
+				//if (d < maxDist) return id;
+				if (inSquare(tile, w, h, x, y)) return id;
+			}
+			return null;
+		}
+
+		//tiles = [
+		//	{on: false, x: 0, y: 4, nbs: [1]}, // 0
+		//	{on: false, x: 3, y: 8, nbs: [0]}, // 1
+		//];
+
+		ctx.font = "30px sans-serif";
+
+		let drawSquares = false;
+		if (drawSquares) {
+			ctx.strokeStyle = "black";
+			for (let i = 0; i < 15; i++) {
+				for (let j = 0; j < 15; j++) {
+					let x = i * w;
+					let y = j * h;
+
+					ctx.strokeRect(x, y, w, h);
+				}
+			}
+		}
+
+		function drawTiles() {
+			ctx.clear
+			ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+			// draw connections
+			if (tileConnections) {
+				ctx.strokeStyle = "black";
+				for (let id in tiles) {
+					let tile = tiles[id];
+					//console.log(tile);
+
+					let x = tile.x * w + w/2;
+					let y = tile.y * h + h/2;
+
+					for (let nbid in tile.nbs) {
+						let id2 = tile.nbs[nbid];
+						let tile2 = tiles[id2];
+
+						let x2 = tile2.x * w + w/2;
+						let y2 = tile2.y * h + h/2;
+
+						ctx.beginPath();
+						ctx.moveTo(x, y);
+						ctx.lineTo(x2, y2);
+						ctx.stroke();
+					}
+				}
+			}
+
+			let origW = ctx.lineWidth;
+
+			for (let id in tiles) {
+				let tile = tiles[id];
+				//console.log(id, tile);
+
+				let x = tile.x * w;
+				let y = tile.y * h;
+
+				// draw tile
+				if (tile.on) ctx.fillStyle = "green";
+				else ctx.fillStyle = "gray";
+				ctx.fillRect(x, y, w, h);
+
+				if (tile.push) {
+					ctx.lineWidth = 3;
+					ctx.strokeStyle = "red";
+					ctx.strokeRect(x, y, w, h);
+					ctx.lineWidth = origW;
+				}
+
+				// draw id on tile
+				if (showIDs) {
+					ctx.fillStyle = "black";
+					let tm = ctx.measureText(id);
+					ctx.fillText(id, x + (w - tm.width) / 2, y + h - 3);
+				}
+			}
+		}
+
+		HouseOfPain();
+
+		// a2 + b2 = c2
+		// c = sqrt(a2 + b2)
+		// c = sqrt(15*15 + 15*15)
+		// c = sqrt(225 + 225)
+		// c = sqrt(450)
+
+		function clickTile(id) {
+			tiles[id].on = !tiles[id].on;
+			if (tiles[id].push) tiles[id].push = false;
+
+			for (bnid in tiles[id].nbs) {
+				let id2 = tiles[id].nbs[bnid];
+				tiles[id2].on = !tiles[id2].on;
+			}
+		}
+
+		let maxDist2 = w*w/4 + h*h/4;
+		board.onclick = function(e) {
+			//console.log(e);
+
+			let clickX = e.offsetX;
+			let clickY = e.offsetY;
+
+			let id = findTile(clickX, clickY, maxDist2);
+			if (id) {
+				clickTile(id);
+				drawTiles();
+			}
+
+			return false;
+		};
+
+		var lastLoc = {x: 0, y: 0};
+		window.oncontextmenu = function(e) {
+			//console.log(e, lastLoc);
+
+			let clickX = lastLoc.x;
+			let clickY = lastLoc.y;
+
+			let id = findTile(clickX, clickY, maxDist2);
+			if (id) {
+				tiles[id].on = !tiles[id].on;
+				drawTiles();
+			}
+
+			return false;
+		}
+
+		board.onmousemove = function(e) {
+			//console.log(e, lastLoc);
+			lastLoc.x = e.offsetX;
+			lastLoc.y = e.offsetY;
+			return false;
+		}
+
+		computeAllToggle.onchange = function(e) {
+			computeAll = computeAllToggle.checked;
+			solution = null;
+			return true;
+		};
+
+		showIDsToggle.onchange = function(e) {
+			showIDs = showIDsToggle.checked;
+			drawTiles();
+			return true;
+		};
+
+		tileConnectionsToggle.onchange = function(e) {
+			tileConnections = tileConnectionsToggle.checked;
+			drawTiles();
+			return true;
+		};
+	</script>
+</body>
+</html>
