@@ -1,0 +1,12 @@
+{
+	"name": "DDO Tools",
+	"description": "DDO Tools",
+	"keywords": [
+		"getting-started",
+		"go",
+		"sample",
+		"example"
+	],
+	"website": "http://github.com/sylonh/ddo-tools",
+	"repository": "http://github.com/sylonh/ddo-tools"
+}
